@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AMM App</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 480px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      input[type='text'],
+      select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #1a73e8;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0f5ec9;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Automated Market Maker</h1>
+      <form>
+        <div class="form-group">
+          <label for="fromToken">From</label>
+          <select id="fromToken">
+            <option value="BTC">BTC</option>
+            <option value="LTC">LTC</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="toToken">To</label>
+          <select id="toToken">
+            <option value="BTC">BTC</option>
+            <option value="LTC">LTC</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="amount">Amount</label>
+          <input
+            type="text"
+            id="amount"
+            placeholder="Enter the amount to swap"
+          />
+        </div>
+        <div class="form-group">
+          <label for="output">Output</label>
+          <input type="text" id="output" placeholder="0" readonly />
+        </div>
+        <button type="submit">Swap Tokens</button>
+      </form>
+    </div>
+    <script>
+      const fromToken = document.getElementById('fromToken')
+      const toToken = document.getElementById('toToken')
+      const amount = document.getElementById('amount')
+      const output = document.getElementById('output')
+      const form = document.querySelector('form')
+
+      // Arbitrary exchange rates for demonstration purposes
+      const rates = {
+        BTC_LTC: 300,
+        BTC_USDT: 27500,
+        LTC_BTC: 1 / 300,
+        LTC_USDT: 27500 / 300,
+        USDT_BTC: 1 / 27500,
+        USDT_LTC: 300 / 27500
+      }
+
+      function calculateOutput() {
+        const from = fromToken.value
+        const to = toToken.value
+        const inputAmount = parseFloat(amount.value)
+
+        if (from === to || isNaN(inputAmount)) {
+          output.value = ''
+          return
+        }
+
+        const rateKey = `${from}_${to}`
+        const rate = rates[rateKey]
+        const outputAmount = inputAmount * rate
+
+        output.value = outputAmount.toFixed(6)
+      }
+
+      fromToken.addEventListener('change', calculateOutput)
+      toToken.addEventListener('change', calculateOutput)
+      amount.addEventListener('input', calculateOutput)
+
+      form.addEventListener('submit', event => {
+        event.preventDefault()
+
+        // Swap tokens logic
+        console.log(
+          `Swapping ${amount.value} ${fromToken.value} to ${toToken.value}`
+        )
+      })
+    </script>
+  </body>
+</html>
