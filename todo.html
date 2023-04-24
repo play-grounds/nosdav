@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>NosDAV Todo</title>
+    <script type="application/ld+json" id="data">
+      {
+        "@id": "#app",
+        "storage": "https://nosdav.nostr.rocks",
+        "uri": "tasks.json",
+        "mode": "m"
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(45deg, #83a4d4, #b6fbff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .timestamp {
+        font-size: 0.8em;
+        color: gray;
+        margin-left: 10px;
+        display: inline-block;
+        text-align: right;
+        vertical-align: bottom;
+        line-height: normal;
+        position: absolute;
+        right: 10px;
+        bottom: 0;
+      }
+
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 90%;
+      }
+
+      h1 {
+        text-align: center;
+        margin: 10px 0;
+        font-size: 36px;
+        color: #333;
+      }
+
+      input {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+        outline: none;
+        border-radius: 5px;
+        transition: all 0.3s;
+      }
+
+      input:focus {
+        border-color: #83a4d4;
+        box-shadow: 0 0 10px rgba(131, 164, 212, 0.5);
+      }
+
+      ul {
+        list-style-type: none;
+        margin: 20px 0;
+        padding: 0;
+      }
+
+      .delete-btn {
+        font-size: 18px;
+        color: #444;
+        background: transparent;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+        position: absolute;
+        right: 10px;
+        top: calc(50% - 4px); /* Add space below the delete button */
+        transform: translateY(-50%);
+      }
+
+      li {
+        position: relative;
+        background-color: #eee;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      li:hover {
+        background-color: #83a4d4;
+        color: #fff;
+      }
+
+      button {
+        font-size: 18px;
+        color: #444;
+        background: transparent;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        color: #f00;
+      }
+
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
+    </style>
+
+    <script type="module" src="./todo.js"></script>
+  </head>
+  <body></body>
+</html>

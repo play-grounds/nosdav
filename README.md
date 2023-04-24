@@ -27,7 +27,9 @@ nosdav playground
 
 ## Apps
 
-[pastebin](./pastebin.html)
+- [pastebin](./pastebin.html)
+- [bookmarks](./bookmarks.html)
+- [todo](./todo.html)
 
 ## License
 
