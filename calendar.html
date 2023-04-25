@@ -11,8 +11,37 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.6/index.global.min.js"></script>
     <script src="./js/calendar.js"></script>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
+    <script
+      type="module"
+      src="https://cdn.skypack.dev/nostr-login-shim"
+    ></script>
+
+    <script type="module">
+      const originalFetch = window.fetch
+
+      window.fetch = async function (url, options) {
+        const newOptions = { ...options }
+
+        if (newOptions.method === 'PUT') {
+          const event = {
+            kind: 27235,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [['u', url]],
+            content: ''
+          }
+          const signedEvent = await window.nostr.signEvent(event)
+          var auth = `Nostr ${btoa(JSON.stringify(signedEvent))}`
+
+          newOptions.headers = {
+            ...newOptions.headers,
+            authorization: auth
+          }
+        }
+
+        return originalFetch.call(this, url, newOptions)
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
         var Calendar = FullCalendar.Calendar
         var Draggable = FullCalendar.Draggable
         var containerEl = document.getElementById('external-events')
@@ -61,14 +90,62 @@
         })
 
         calendar.render()
+        var loadBtn = document.getElementById('load-button')
+
+        // Load button click event
+        loadBtn.addEventListener('click', async function () {
+          var pubkey = await window.nostr.getPublicKey()
+          var storage = `https://nosdav.nostr.rocks/${pubkey}/calendar/index.json`
+          fetch(storage, {
+            method: 'GET'
+          })
+            .then(function (response) {
+              if (response.ok) {
+                return response.json()
+              } else {
+                throw new Error('Error loading calendar data')
+              }
+            })
+            .then(function (eventsJSON) {
+              calendar.removeAllEvents()
+              eventsJSON.forEach(function (eventData) {
+                calendar.addEvent(eventData)
+              })
+              console.log('Calendar data loaded successfully')
+            })
+            .catch(function (error) {
+              console.error('Error:', error)
+              console.log('Error loading calendar data')
+            })
+        })
 
         // Save button click event
-        saveBtn.addEventListener('click', function () {
+        saveBtn.addEventListener('click', async function () {
           var events = calendar.getEvents()
           var eventsJSON = events.map(function (event) {
             return event.toPlainObject()
           })
-          alert(JSON.stringify(eventsJSON))
+
+          var pubkey = await window.nostr.getPublicKey()
+          var storage = `https://nosdav.nostr.rocks/${pubkey}/calendar/index.json`
+          fetch(storage, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eventsJSON)
+          })
+            .then(function (response) {
+              if (response.ok) {
+                console.log('Calendar data saved successfully')
+              } else {
+                console.log('Error saving calendar data')
+              }
+            })
+            .catch(function (error) {
+              console.error('Error:', error)
+              console.log('Error saving calendar data')
+            })
         })
       })
     </script>
@@ -114,14 +191,32 @@
       }
 
       #save-button {
-        position: fixed;
-        z-index: 2;
-        top: 20px;
-        right: 20px;
+        display: inline-block;
+        margin-top: 10px;
         padding: 10px 15px;
         background-color: #3a87ad;
         color: white;
         border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #save-button:hover {
+        background-color: #2a6996;
+      }
+
+      #load-button {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #3a87ad;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #load-button:hover {
+        background-color: #2a6996;
       }
     </style>
   </head>
@@ -149,13 +244,13 @@
       <p>
         <input type="checkbox" id="drop-remove" />
         <label for="drop-remove">remove after drop</label>
+        <button id="save-button">Save</button>
+        <button id="load-button">Load</button>
       </p>
     </div>
 
     <div id="calendar-container">
       <div id="calendar"></div>
     </div>
-
-    <button id="save-button">Save</button>
   </body>
 </html>
