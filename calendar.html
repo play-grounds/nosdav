@@ -8,17 +8,17 @@
     <link href="./calendar.css" rel="stylesheet" />
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.6/index.global.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.6/index.global.min.js"></script>
     <script src="./js/calendar.js"></script>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         var Calendar = FullCalendar.Calendar
         var Draggable = FullCalendar.Draggable
-
         var containerEl = document.getElementById('external-events')
         var calendarEl = document.getElementById('calendar')
         var checkbox = document.getElementById('drop-remove')
+        var saveBtn = document.getElementById('save-button')
 
         // initialize the external events
         // -----------------------------------------------------------------
@@ -42,17 +42,34 @@
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
           },
           editable: true,
-          droppable: true, // this allows things to be dropped onto the calendar
+          droppable: true,
+          eventResizableFromStart: true,
+          eventResizableFromEnd: true,
+          eventStartEditable: true,
+          eventDurationEditable: true,
           drop: function (info) {
-            // is the "remove after drop" checkbox checked?
             if (checkbox.checked) {
-              // if so, remove the element from the "Draggable Events" list
               info.draggedEl.parentNode.removeChild(info.draggedEl)
+            }
+          },
+          eventClick: function (info) {
+            var newTitle = prompt('Edit event title:', info.event.title)
+            if (newTitle) {
+              info.event.setProp('title', newTitle)
             }
           }
         })
 
         calendar.render()
+
+        // Save button click event
+        saveBtn.addEventListener('click', function () {
+          var events = calendar.getEvents()
+          var eventsJSON = events.map(function (event) {
+            return event.toPlainObject()
+          })
+          alert(JSON.stringify(eventsJSON))
+        })
       })
     </script>
     <style>
@@ -95,6 +112,17 @@
         max-width: 1100px;
         margin: 20px auto;
       }
+
+      #save-button {
+        position: fixed;
+        z-index: 2;
+        top: 20px;
+        right: 20px;
+        padding: 10px 15px;
+        background-color: #3a87ad;
+        color: white;
+        border: none;
+      }
     </style>
   </head>
   <body>
@@ -102,7 +130,6 @@
       <p>
         <strong>Draggable Events</strong>
       </p>
-
       <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event">
         <div class="fc-event-main">My Event 1</div>
       </div>
@@ -128,5 +155,7 @@
     <div id="calendar-container">
       <div id="calendar"></div>
     </div>
+
+    <button id="save-button">Save</button>
   </body>
 </html>
