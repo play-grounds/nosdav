@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-image: linear-gradient(135deg, #83a4d4, #b6fbff);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .title {
+        font-size: 36px;
+        color: #444;
+        margin-bottom: 20px;
+      }
+
+      #shorten-form {
+        justify-content: center;
+        align-items: center;
+      }
+
+      input[type='text'] {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        margin-bottom: 10px; /* Add a margin below the input fields */
+        width: 300px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background-color: #83a4d4;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #b6fbff;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+    <title>Link Shortener</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Link Shortener</h1>
+      <form id="shorten-form">
+        <div>
+          <!-- Add a div wrapper around each input -->
+          <input
+            type="text"
+            id="long-url"
+            placeholder="Enter your long URL"
+            required
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            id="custom-short"
+            placeholder="Enter a custom short link (optional)"
+          />
+        </div>
+        <div id="result" class="hidden">
+          <a id="short-url" target="_blank"></a>
+          <!-- Change the span to an anchor tag -->
+          <br />
+        </div>
+        <button type="button" id="shorten-btn">Save Shortcut</button>
+        <!-- Change the button type to "button" -->
+      </form>
+    </div>
+    <script type="module">
+      import 'https://cdn.skypack.dev/nostr-login-shim'
+      import 'https://cdn.skypack.dev/nosdav-shim'
+      document
+        .getElementById('shorten-form')
+        .addEventListener('submit', function (event) {
+          event.preventDefault()
+          const longUrl = document.getElementById('long-url').value
+          const customShort = document.getElementById('custom-short').value
+
+          // If the user has entered a custom short link, use it; otherwise, generate a suggested short link
+          const shortUrl = customShort ? customShort : generateShortUrl(longUrl)
+          displayShortUrl(shortUrl)
+        })
+
+      document
+        .getElementById('shorten-btn')
+        .addEventListener('click', async function (event) {
+          const longUrl = document.getElementById('long-url').value
+          const customShort = document.getElementById('custom-short').value
+
+          // If the user has entered a custom short link, use it; otherwise, generate a suggested short link
+          const pubkey = await window.nostr.getPublicKey()
+          const shortUrl =
+            'https://nosdav.nostr.rocks/' +
+            pubkey +
+            '/s/' +
+            (customShort ? customShort : generateShortUrl(longUrl)) +
+            '.html'
+
+          await saveShortUrl(shortUrl, longUrl)
+          displayShortUrl(shortUrl)
+        })
+
+      async function saveShortUrl(shortUrl, longUrl) {
+        const redirectHtml = `<html><head><meta http-equiv="refresh" content="0;url=${longUrl}"></head></html>`
+        const response = await fetch(shortUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'text/html' },
+          body: redirectHtml
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save short URL')
+        }
+      }
+
+      function generateShortUrl(longUrl) {
+        // Replace this function with an API call to a URL shortening service to get a real short URL
+        const randomId = Math.random().toString(36).substr(2, 5)
+        return randomId
+      }
+      function displayShortUrl(shortUrl) {
+        const resultDiv = document.getElementById('result')
+        const shortUrlAnchor = document.getElementById('short-url')
+
+        shortUrlAnchor.textContent = shortUrl
+        shortUrlAnchor.href = shortUrl // Set the href attribute of the anchor tag
+        resultDiv.classList.remove('hidden')
+      }
+    </script>
+  </body>
+</html>
