@@ -4,11 +4,11 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Fira+Sans:400,300,300italic,400italic,500,500italic,700,700italic"
     />
-    <link rel="stylesheet" href="./css/main.css" />
-    <link rel="stylesheet" href="./css/demo-grid.css" />
-    <link rel="stylesheet" href="./css/demo-kanban.css" />
+    <link rel="stylesheet" href="https://nosdav.com/css/main.css" />
+    <link rel="stylesheet" href="https://nosdav.com/css/demo-grid.css" />
+    <link rel="stylesheet" href="https://nosdav.com/css/demo-kanban.css" />
 
-    <script src="./js/muuri.min.js"></script>
+    <script src="https://nosdav.com/js/muuri.min.js"></script>
 
     <script type="application/ld+json" id="data">
       [
@@ -29,16 +29,52 @@
         }
       ]
     </script>
+    <script
+      type="module"
+      src="https://cdn.skypack.dev/nostr-login-shim"
+    ></script>
+    <script type="module" src="https://cdn.skypack.dev/nosdav-shim"></script>
 
     <script type="module">
       import { h, html, render, Component } from 'https://cdn.skypack.dev/spux'
       import 'https://cdn.skypack.dev/dior'
-      import updateThis from 'https://unpkg.com/spux-modules/updatethis.js'
+
+      function updateThis(id, uri) {
+        uri = uri || location.href
+        fetch(location.href).then(response => {
+          if (!response.ok) {
+            fetch(uri, {
+              method: 'PUT',
+              body: newhtml,
+              headers: {
+                'content-type': 'text/html'
+              }
+            }).then(console.log)
+          } else {
+            response.text().then(html => {
+              var newhtml = html.replace(
+                /(<script[^>]*type="application[^>]*>)([\s\S]*?)(<\/script>)/gim,
+                '$1' + JSON.stringify(di[id], null, 2) + '$3'
+              )
+              console.log('putting', uri, newhtml)
+              if (newhtml !== html) {
+                fetch(uri, {
+                  method: 'PUT',
+                  body: newhtml,
+                  headers: {
+                    'content-type': 'text/html'
+                  }
+                }).then(console.log)
+              }
+            })
+          }
+        })
+      }
 
       var id = 'data'
 
-      function serializeGrid() {
-        setTimeout(() => {
+      async function serializeGrid() {
+        setTimeout(async () => {
           di[id][0].items = []
           di[id][1].items = []
           di[id][2].items = []
@@ -56,7 +92,10 @@
           console.log(di[id][0].items)
           console.log(di[id][1].items)
           console.log(di[id][2].items)
-          updateThis(id)
+          var pubkey = await window.nostr.getPublicKey()
+          var storage =
+            'https://nosdav.nostr.rocks/' + pubkey + '/kanban/index.html'
+          updateThis(id, storage)
         }, 1000)
       }
 
@@ -123,13 +162,13 @@
           .on('dragEnd', () => {
             --colDragCounter
           })
-          .on('dragReleaseEnd', () => {
+          .on('dragReleaseEnd', async () => {
             if (!colDragCounter) {
               board.style.width = ''
               board.style.overflow = ''
             }
             console.log('dragReleaseEnd')
-            serializeGrid()
+            await serializeGrid()
           })
 
         //
@@ -155,7 +194,7 @@
         // Toggle edit.
         let selectedItemElem = null
         let selectedTitleElem = null
-        board.addEventListener('click', e => {
+        board.addEventListener('click', async e => {
           if (e.target.matches('.board-item-action.edit')) {
             const editElem = e.target
             const itemElem = editElem.closest('.board-item')
@@ -170,7 +209,7 @@
               selectedTitleElem.blur()
               selectedItemElem = null
               selectedTitleElem = null
-              serializeGrid()
+              await serializeGrid()
             }
 
             if (activate) {
@@ -181,13 +220,13 @@
               selectedTitleElem.setAttribute('focusable', true)
               selectedTitleElem.setAttribute('tabindex', 0)
               selectedTitleElem.focus()
-              serializeGrid()
+              await serializeGrid()
             }
           }
         })
 
         // Add column item.
-        board.addEventListener('click', e => {
+        board.addEventListener('click', async e => {
           if (e.target.matches('.board-column-action.add')) {
             const gridElem = e.target
               .closest('.board-column')
@@ -197,12 +236,12 @@
               return grid.getElement() === gridElem ? grid : undefined
             }, undefined)
             addColItem(grid, 'TODO')
-            serializeGrid()
+            await serializeGrid()
           }
         })
 
         // Remove column item.
-        board.addEventListener('click', e => {
+        board.addEventListener('click', async e => {
           if (e.target.matches('.board-item-action.delete')) {
             const itemElem = e.target.closest('.board-item')
             const item = colGrids.reduce(
@@ -216,11 +255,11 @@
               }
             })
           }
-          serializeGrid()
+          await serializeGrid()
         })
 
         // Update layout when title is modified.
-        board.addEventListener('input', e => {
+        board.addEventListener('input', async e => {
           if (e.target.matches('.board-item-title')) {
             const itemElem = e.target.closest('.board-item')
             const item = colGrids.reduce(
@@ -237,7 +276,7 @@
               grid.layout()
             }
           }
-          serializeGrid()
+          await serializeGrid()
         })
 
         //
@@ -313,13 +352,13 @@
                     style.width = toGrid._width - 20 + 'px'
                     toGrid.refreshItems([item])
                   })
-                  .on('dragReleaseEnd', item => {
+                  .on('dragReleaseEnd', async item => {
                     const style = item.getElement().style
                     style.width = ''
                     style.height = ''
                     grid.refreshItems([item])
                     console.log('dragReleaseEnd')
-                    serializeGrid()
+                    await serializeGrid()
                   })
                   .on('layoutEnd', () => {
                     boardGrid.layout()
