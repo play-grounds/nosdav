@@ -116,7 +116,9 @@
             `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/full?limit=50&includeScript=true`
           )
           .then(response => {
-            const utxos = response.data.txs.filter(tx => tx.spent === false)
+            const utxos = response.data.txs.filter(
+              tx => tx.double_spend === false
+            )
             const confirmedBalance = response.data.balance / 100000000
             const unconfirmedBalance =
               response.data.unconfirmed_balance / 100000000
@@ -127,20 +129,21 @@
             document.getElementById('unconfirmed-balance').textContent =
               unconfirmedBalance.toFixed(8)
 
+            console.log(response.data.txs)
+
             const confirmedUtxoList = utxos
               .filter(tx => tx.confirmations > 0)
               .map(tx => {
+                var vout = tx.outputs.findIndex(
+                  output => output.addresses[0] === address
+                )
                 return `
             <li>
               <strong>Transaction ID:</strong> ${tx.hash}
               <br>
-              <strong>Output Index:</strong> ${tx.tx_output_n}
+              <strong>Output Index:</strong> ${vout}
               <br>
-              <strong>Amount:</strong> ${tx.value / 100000000} BTC
-              <br>
-              <strong>Script Type:</strong> ${
-                tx.outputs[tx.tx_output_n].script_type
-              }
+              <strong>Amount:</strong> ${tx.outputs[vout].value} Sats
             </li>
           `
               })
@@ -148,17 +151,17 @@
             const unconfirmedUtxoList = utxos
               .filter(tx => tx.confirmations === 0)
               .map(tx => {
+                var vout = tx.outputs.findIndex(
+                  output => output.addresses[0] === address
+                )
+
                 return `
             <li>
               <strong>Transaction ID:</strong> ${tx.hash}
               <br>
-              <strong>Output Index:</strong> ${tx.tx_output_n}
+              <strong>Output Index:</strong> ${vout}
               <br>
-              <strong>Amount:</strong> ${tx.value / 100000000} BTC
-              <br>
-              <strong>Script Type:</strong> ${
-                tx.outputs[tx.tx_output_n].script_type
-              }
+              <strong>Amount:</strong> ${tx.outputs[vout].value} Sats
             </li>
           `
               })
