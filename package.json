@@ -1,6 +1,6 @@
 {
   "name": "nosdav-play",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "nosdav-play",
   "main": "index.js",
   "scripts": {
