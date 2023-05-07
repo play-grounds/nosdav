@@ -22,5 +22,7 @@
     "url": "https://github.com/play-grounds/nosdav/issues"
   },
   "homepage": "https://github.com/play-grounds/nosdav#readme",
-  "dependencies": {}
+  "dependencies": {
+    "@scure/base": "^1.1.1"
+  }
 }
