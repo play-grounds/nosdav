@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nosgraph Recommendation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .recommendation {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Nosgraph Recommendation</h1>
+
+    <label for="pubkey">Enter a public key:</label>
+    <input type="text" id="pubkey" name="pubkey" />
+    <button onclick="getRecommendations()">Get Recommendations</button>
+
+    <div id="results"></div>
+
+    <script>
+      async function getRecommendations() {
+        const pubkey = document.getElementById('pubkey').value
+        const url = `https://nostr.social/.well-known/nostr/pubkey/${pubkey}/index.json`
+        const response = await fetch(url)
+        const data = await response.json()
+        console.log(data)
+        const followers = data.mainEntity.following.map(f =>
+          f.replace('nostr:pubkey:', '')
+        )
+
+        const recommendationUrl = `https://api.semisol.dev/nosgraph/v1/recommend`
+        const recommendationResponse = await fetch(recommendationUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            pubkey: pubkey,
+            following: followers,
+            exclude: []
+          })
+        })
+        const recommendationData = await recommendationResponse.json()
+
+        const resultsElement = document.getElementById('results')
+        resultsElement.innerHTML = ''
+
+        recommendationData.recommendations.forEach(([recPubkey]) => {
+          const recElement = document.createElement('div')
+          recElement.classList.add('recommendation')
+
+          const linkElement = document.createElement('a')
+          linkElement.href = `https://nostr.social/${recPubkey}`
+          linkElement.textContent = recPubkey
+
+          recElement.appendChild(linkElement)
+          resultsElement.appendChild(recElement)
+        })
+      }
+    </script>
+  </body>
+</html>
