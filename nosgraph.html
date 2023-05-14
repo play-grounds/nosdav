@@ -115,6 +115,7 @@
           const linkElement = document.createElement('a')
           linkElement.href = `https://nostr.social/${recPubkey}`
           linkElement.textContent = recPubkey
+          linkElement.target = '_blank'
 
           recElement.appendChild(linkElement)
           resultsElement.appendChild(recElement)
