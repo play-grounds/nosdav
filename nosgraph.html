@@ -1,40 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Nosgraph Recommendation</title>
     <style>
       body {
         font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
       }
-      .recommendation {
-        margin: 10px 0;
+
+      h1 {
+        font-size: 2em;
+        color: #333;
+      }
+
+      #pubkey {
         padding: 10px;
+        border: none;
+        border-radius: 5px;
+        width: 70%;
+        margin-right: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .recommendation {
+        margin: 20px 0;
+        padding: 15px;
         border: 1px solid #ddd;
-        border-radius: 4px;
-        background-color: #f9f9f9;
+        border-radius: 5px;
+        background-color: #fff;
+      }
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
     <h1>Nosgraph Recommendation</h1>
 
-    <label for="pubkey">Enter a public key:</label>
-    <input type="text" id="pubkey" name="pubkey" />
-    <button onclick="getRecommendations()">Get Recommendations</button>
+    <div>
+      <input
+        type="text"
+        id="pubkey"
+        name="pubkey"
+        placeholder="Enter a public key"
+      />
+      <button onclick="getRecommendations()">Get Recommendations</button>
+    </div>
 
     <div id="results"></div>
 
     <script>
       async function getRecommendations() {
         const pubkey = document.getElementById('pubkey').value
-        const url = `https://nostr.social/.well-known/nostr/pubkey/${pubkey}/index.json`
-        const response = await fetch(url)
-        const data = await response.json()
-        console.log(data)
+        const data = await fetchPublicKey(pubkey)
         const followers = data.mainEntity.following.map(f =>
           f.replace('nostr:pubkey:', '')
         )
+        const recommendations = await fetchRecommendations(pubkey, followers)
 
+        displayRecommendations(recommendations)
+      }
+
+      async function fetchPublicKey(pubkey) {
+        const url = `https://nostr.social/.well-known/nostr/pubkey/${pubkey}/index.json`
+        const response = await fetch(url)
+        return await response.json()
+      }
+
+      async function fetchRecommendations(pubkey, followers) {
         const recommendationUrl = `https://api.semisol.dev/nosgraph/v1/recommend`
         const recommendationResponse = await fetch(recommendationUrl, {
           method: 'POST',
@@ -47,8 +101,10 @@
             exclude: []
           })
         })
-        const recommendationData = await recommendationResponse.json()
+        return await recommendationResponse.json()
+      }
 
+      function displayRecommendations(recommendationData) {
         const resultsElement = document.getElementById('results')
         resultsElement.innerHTML = ''
 
